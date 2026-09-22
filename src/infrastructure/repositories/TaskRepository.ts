@@ -1,5 +1,6 @@
 import { ITaskRepository } from "../../domain/repositories/ITaskRepository";
 import { Task, TaskStatus, TaskPriority } from "../../domain/entities/Task";
+import { UpdateTaskDTO } from "../../application/dto/UpdateTaskDTO";
 import { prisma } from "../database/prisma";
 
 export class TaskRepository implements ITaskRepository {
@@ -65,6 +66,35 @@ export class TaskRepository implements ITaskRepository {
                 createdAt: task.createdAt,
                 updatedAt: task.updatedAt,
             }
+        });
+    }
+
+    async update(taskId: string, data: UpdateTaskDTO): Promise<Task> {
+        const updated = await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                ...(data.status && { status: data.status }),
+                ...(data.priority && { priority: data.priority })
+            }
+        });
+
+        return new Task(
+            updated.id,
+            updated.title,
+            updated.description || "",
+            updated.status as any, // Casteo temporal a tu enum/type
+            updated.priority as any,
+            updated.projectId,
+            updated.assigneeId,
+            updated.createdAt,
+            updated.updatedAt
+        );
+    }
+
+    async assignTask(taskId: string, assigneeId: string): Promise<void> {
+        await prisma.task.update({
+            where: { id: taskId },
+            data: { assigneeId }
         });
     }
 }

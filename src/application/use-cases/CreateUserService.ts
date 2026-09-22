@@ -15,22 +15,30 @@ export class CreateUserService {
             throw new Error("El correo ya está registrado en el sistema");
         }
 
-        // 2. Encriptar la contraseña
+        // 2. Formatear el nombre a Title Case (Primera letra de cada palabra en mayúscula)
+        const formattedName = data.name
+            .trim()
+            .toLowerCase()
+            .split(/\s+/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+
+        // 3. Encriptar la contraseña
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(data.password, salt);
 
-        // 3. Crear la entidad pura de Dominio
+        // 4. Crear la entidad pura de Dominio con el nombre formateado
         const now = new Date();
         const newUser = new User(
             crypto.randomUUID(),
-            data.name,
+            formattedName,
             data.email,
             passwordHash,
             now,
             now
         );
 
-        // 4. Delegar el guardado a la capa de Infraestructura
+        // 5. Delegar el guardado a la capa de Infraestructura
         await this.userRepository.save(newUser);
 
         return newUser;

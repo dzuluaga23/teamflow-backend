@@ -1,6 +1,7 @@
 import { ITeamRepository } from "../../domain/repositories/ITeamRepository";
 import { Team } from "../../domain/entities/Team";
 import { prisma } from "../database/prisma";
+import { User } from "../../domain/entities/User";
 
 export class TeamRepository implements ITeamRepository {
     async findById(id: string): Promise<Team | null> {
@@ -38,5 +39,33 @@ export class TeamRepository implements ITeamRepository {
                 updatedAt: team.updatedAt,
             }
         });
+    }
+
+    async addUserToTeam(userId: string, teamId: string): Promise<void> {
+        await prisma.teamMember.create({
+            data: {
+                userId,
+                teamId
+            }
+        });
+    }
+
+    async getMembers(teamId: string): Promise<User[]> {
+        const teamMembers = await prisma.teamMember.findMany({
+            where: { teamId },
+            include: {
+                user: true // Traemos toda la info del usuario asociado
+            }
+        });
+
+        // Convertimos a entidades de dominio
+        return teamMembers.map(tm => new User(
+            tm.user.id,
+            tm.user.name,
+            tm.user.email,
+            tm.user.passwordHash,
+            tm.user.createdAt,
+            tm.user.updatedAt
+        ));
     }
 }
