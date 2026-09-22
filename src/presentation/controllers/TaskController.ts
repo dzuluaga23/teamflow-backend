@@ -5,13 +5,15 @@ import { GetTasksByProjectService } from "../../application/use-cases/GetTasksBy
 import { UpdateTaskService } from "../../application/use-cases/UpdateTaskService";
 import { UpdateTaskDTO } from "../../application/dto/UpdateTaskDTO";
 import { AssignTaskService } from "../../application/use-cases/AssignTaskService";
+import { DeleteTaskService } from "../../application/use-cases/DeleteTaskService";
 
 export class TaskController {
     constructor(
         private createTaskService: CreateTaskService,
         private getTasksService: GetTasksByProjectService,
         private updateTaskService: UpdateTaskService,
-        private assignTaskService: AssignTaskService
+        private assignTaskService: AssignTaskService,
+        private deleteTaskService: DeleteTaskService
     ) { }
 
     async create(req: AuthRequest, res: Response): Promise<Response> {
@@ -105,6 +107,24 @@ export class TaskController {
 
             return res.status(200).json({
                 message: "Responsable asignado a la tarea con éxito"
+            });
+        } catch (error: any) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
+    async delete(req: AuthRequest, res: Response): Promise<Response> {
+        try {
+            const taskId = req.params.taskId as string;
+
+            if (!taskId) {
+                return res.status(400).json({ error: "El ID de la tarea es obligatorio en la ruta" });
+            }
+
+            await this.deleteTaskService.execute(taskId);
+
+            return res.status(200).json({
+                message: "Tarea eliminada con éxito"
             });
         } catch (error: any) {
             return res.status(500).json({ error: error.message });

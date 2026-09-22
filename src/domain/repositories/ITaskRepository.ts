@@ -7,4 +7,5 @@ export interface ITaskRepository {
     save(task: Task): Promise<void>;
     assignTask(taskId: string, assigneeId: string): Promise<void>;
     update(taskId: string, data: UpdateTaskDTO): Promise<Task>;
+    delete(taskId: string): Promise<void>;
 }

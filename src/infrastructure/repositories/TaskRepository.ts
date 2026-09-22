@@ -97,4 +97,11 @@ export class TaskRepository implements ITaskRepository {
             data: { assigneeId }
         });
     }
+
+    async delete(taskId: string): Promise<void> {
+        await prisma.task.update({
+            where: { id: taskId },
+            data: { deletedAt: new Date() } // <-- Llenamos el campo con la fecha actual
+        });
+    }
 }

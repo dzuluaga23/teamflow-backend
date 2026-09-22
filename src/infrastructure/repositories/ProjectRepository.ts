@@ -41,4 +41,11 @@ export class ProjectRepository implements IProjectRepository {
             }
         });
     }
+
+    async delete(projectId: string): Promise<void> {
+        await prisma.project.update({
+            where: { id: projectId },
+            data: { deletedAt: new Date() }
+        });
+    }
 }

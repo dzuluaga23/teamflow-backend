@@ -27,4 +27,25 @@ export class OrganizationRepository implements IOrganizationRepository {
             }
         });
     }
+
+    async findAll(): Promise<Organization[]> {
+        const data = await prisma.organization.findMany({
+            where: { deletedAt: null },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return data.map(org => new Organization(
+            org.id,
+            org.name,
+            org.createdAt,
+            org.updatedAt
+        ));
+    }
+
+    async delete(organizationId: string): Promise<void> {
+        await prisma.organization.update({
+            where: { id: organizationId },
+            data: { deletedAt: new Date() }
+        });
+    }
 }

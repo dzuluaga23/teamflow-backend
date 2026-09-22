@@ -13,16 +13,6 @@ export class TeamRepository implements ITeamRepository {
         return new Team(data.id, data.name, data.organizationId, data.createdAt, data.updatedAt);
     }
 
-    async findByOrganizationId(organizationId: string): Promise<Team[]> {
-        const data = await prisma.team.findMany({
-            where: { organizationId, deletedAt: null }
-        });
-
-        return data.map(team =>
-            new Team(team.id, team.name, team.organizationId, team.createdAt, team.updatedAt)
-        );
-    }
-
     async save(team: Team): Promise<void> {
         await prisma.team.upsert({
             where: { id: team.id },
@@ -67,5 +57,27 @@ export class TeamRepository implements ITeamRepository {
             tm.user.createdAt,
             tm.user.updatedAt
         ));
+    }
+
+    async findByOrganizationId(organizationId: string): Promise<Team[]> {
+        const data = await prisma.team.findMany({
+            where: { organizationId, deletedAt: null },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return data.map(t => new Team(
+            t.id,
+            t.name,
+            t.organizationId,
+            t.createdAt,
+            t.updatedAt
+        ));
+    }
+
+    async delete(teamId: string): Promise<void> {
+        await prisma.team.update({
+            where: { id: teamId },
+            data: { deletedAt: new Date() }
+        });
     }
 }

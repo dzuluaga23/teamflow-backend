@@ -2,10 +2,14 @@ import { Response } from "express";
 import { CreateProjectService } from "../../application/use-cases/CreateProjectService";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { GetProjectsByOrganizationService } from "../../application/use-cases/GetProjectsByOrganizationService";
+import { DeleteProjectService } from "../../application/use-cases/DeleteProjectService";
 
 export class ProjectController {
-    constructor(private createProjectService: CreateProjectService,
-        private getProjectsService: GetProjectsByOrganizationService) { }
+    constructor(
+        private createProjectService: CreateProjectService,
+        private getProjectsService: GetProjectsByOrganizationService,
+        private deleteProjectService: DeleteProjectService
+    ) { }
 
     async create(req: AuthRequest, res: Response): Promise<Response> {
         try {
@@ -45,6 +49,24 @@ export class ProjectController {
             return res.status(200).json({
                 message: "Proyectos obtenidos con éxito",
                 data: projects
+            });
+        } catch (error: any) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+
+    async delete(req: AuthRequest, res: Response): Promise<Response> {
+        try {
+            const projectId = req.params.projectId as string;
+
+            if (!projectId) {
+                return res.status(400).json({ error: "El ID del proyecto es obligatorio" });
+            }
+
+            await this.deleteProjectService.execute(projectId);
+
+            return res.status(200).json({
+                message: "Proyecto eliminado con éxito"
             });
         } catch (error: any) {
             return res.status(500).json({ error: error.message });
